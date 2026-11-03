@@ -3,8 +3,8 @@
   const $ = (s, parent = document) => parent.querySelector(s);
   const $$ = (s, parent = document) => [...parent.querySelectorAll(s)];
   const track = (event, detail = {}) => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event, ...detail }); };
-  const openDialog = dialog => { if (window.RCMotion) window.RCMotion.openDialog(dialog); else dialog.showModal(); };
-  const closeDialog = dialog => { if (window.RCMotion) return window.RCMotion.closeDialog(dialog); dialog.close(); return Promise.resolve(); };
+  const openDialog = (dialog, source) => { if (!dialog) return; if (window.RCMotion) window.RCMotion.openDialog(dialog, source); else dialog.showModal(); };
+  const closeDialog = dialog => { if (!dialog) return Promise.resolve(); if (window.RCMotion) return window.RCMotion.closeDialog(dialog); dialog.close(); return Promise.resolve(); };
   const menu = $('#mobile-menu');
   const toggle = $('#menu-toggle');
   function closeMenu() { if (menu?.open) closeDialog(menu); }
@@ -24,9 +24,10 @@
     button.classList.add('is-active'); button.setAttribute('aria-pressed', 'true');
     const active = button.dataset.filter;
     const cards = $$('.gallery-item');
+    const before = window.RCMotion?.gallerySnapshot?.(cards);
     const wasVisible = new Set(cards.filter(card => !card.hidden));
     cards.forEach(c => { c.hidden = active !== 'all' && c.dataset.category !== active; });
-    window.RCMotion?.galleryChange(cards.filter(card => !card.hidden && !wasVisible.has(card)), cards.filter(card => card.hidden));
+    window.RCMotion?.galleryChange(cards.filter(card => !card.hidden && !wasVisible.has(card)), cards.filter(card => card.hidden), before, cards.filter(card => !card.hidden));
     const n = cards.filter(c => !c.hidden).length;
     $('#gallery-count').textContent = photoCount(n);
   }));
@@ -38,7 +39,7 @@
     const enlarged = $('#lightbox-image');
     enlarged.src = button.dataset.full; enlarged.alt = image.alt;
     $('#lightbox-caption').textContent = button.dataset.caption || image.alt;
-    openDialog(lightbox); $('#lightbox-close').focus();
+    openDialog(lightbox, button); $('#lightbox-close').focus();
   }));
   const closePhoto = () => closeDialog(lightbox);
   $('#lightbox-close')?.addEventListener('click', closePhoto);
@@ -62,10 +63,19 @@
   const preset = new URLSearchParams(location.search).get('typ');
   if (preset && [...event.options].some(o => o.value === preset)) event.value = preset;
   function updateConditional() {
-    $$('.conditional', form).forEach(el => el.hidden = el.dataset.for !== event.value);
+    $$('.conditional', form).forEach(el => {
+      const wasHidden = el.hidden;
+      el.hidden = el.dataset.for !== event.value;
+      if (wasHidden !== el.hidden) window.RCMotion?.conditional?.(el);
+    });
   }
   event.addEventListener('change', updateConditional); updateConditional();
-  unknownDate.addEventListener('change', () => { date.disabled = unknownDate.checked; date.required = !unknownDate.checked; date.setCustomValidity(''); });
+  const clearInvalid = inputEvent => {
+    if (inputEvent.target.matches('input,select,textarea')) inputEvent.target.removeAttribute('aria-invalid');
+  };
+  form.addEventListener('input', clearInvalid);
+  form.addEventListener('change', clearInvalid);
+  unknownDate.addEventListener('change', () => { date.disabled = unknownDate.checked; date.required = !unknownDate.checked; date.setCustomValidity(''); date.removeAttribute('aria-invalid'); });
   date.addEventListener('change', () => date.setCustomValidity(date.value && date.value < today ? 'Vyberte dnešní nebo budoucí datum.' : ''));
   function showStep(index, focus = true) {
     const previous = current;
@@ -78,7 +88,7 @@
   function validateStep() {
     const fields = $$('input,select,textarea', steps[current]).filter(x => !x.disabled);
     for (const field of fields) {
-      if (!field.checkValidity()) { field.reportValidity(); return false; }
+      if (!field.checkValidity()) { field.setAttribute('aria-invalid', 'true'); field.reportValidity(); window.RCMotion?.invalid?.(field); return false; }
     }
     return true;
   }
@@ -119,6 +129,7 @@
   $('#copy-enquiry')?.addEventListener('click', async () => {
     try { await navigator.clipboard.writeText(emailBody); $('#copy-status').textContent='Text je zkopírovaný. Vložte jej do e-mailu.'; }
     catch { $('#copy-status').textContent='Kopírování není dostupné. Označte a zkopírujte text shrnutí níže.'; }
+    window.RCMotion?.feedback?.($('#copy-status'));
   });
   $('#download-enquiry')?.addEventListener('click', () => {
     const encoded = btoa(unescape(encodeURIComponent(emailSubject)));

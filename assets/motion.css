@@ -1,32 +1,51 @@
-/* Progressive motion: no baseline opacity, visibility, masks, clipping or layout changes. */
-:root{--motion-ease:cubic-bezier(.16,1,.3,1);--motion-quick:190ms;--motion-hover:260ms}
-/* Same-origin page transitions enhance normal links; unsupported browsers navigate normally. */
+/* Motion has hierarchy. Text metrics, accent clearance and layout stay unchanged. */
+:root{--motion-ease:cubic-bezier(.16,1,.3,1);--motion-quick:180ms;--motion-hover:280ms}
 @view-transition{navigation:auto}
+::view-transition{pointer-events:none}
 @keyframes rc-page-out{to{opacity:0}}
 @keyframes rc-page-in{from{opacity:0}to{opacity:1}}
-::view-transition-old(root){animation:rc-page-out 160ms ease-out both}
+::view-transition-old(root){animation:rc-page-out 130ms ease-out both}
 ::view-transition-new(root){animation:rc-page-in 220ms var(--motion-ease) both}
-@media(prefers-reduced-motion:no-preference){
-  .btn{transition:transform var(--motion-hover) var(--motion-ease)}
-  .btn .arrow,.row-arrow,.circle-arrow{transition:transform var(--motion-hover) var(--motion-ease)}
-  .btn:active{transform:translateY(0) scale(.98)}
-  .menu-toggle,.menu-close,.lightbox-close,.gallery-filter{transition:transform var(--motion-quick) var(--motion-ease)}
-  .menu-toggle:active,.menu-close:active,.lightbox-close:active,.gallery-filter:active{transform:scale(.96)}
-  .nav a:after{right:0;transform:scaleX(0);transform-origin:left;transition:transform var(--motion-hover) var(--motion-ease)}
-  .nav a:hover:after,.nav a[aria-current=page]:after{right:0;transform:scaleX(1)}
-  .service-visual img,.photo-open img{transition:transform 700ms var(--motion-ease)}
-  .footer-links a{transition:transform var(--motion-hover) var(--motion-ease)}
-  @media(hover:hover) and (pointer:fine){
-    .btn:hover .arrow,.service-row:hover .row-arrow{transform:translate(3px,-3px)}
-    .service-visual:hover .circle-arrow{transform:translate(3px,-3px)}
-    .service-visual:hover img,.photo-open:hover img{transform:scale(1.035)}
-    .footer-links a:hover{transform:translateX(3px)}
-  }
-}
-/* Focus appears immediately; its position and the text's glyph metrics never animate. */
+.field input[aria-invalid=true],.field select[aria-invalid=true],.field textarea[aria-invalid=true]{border-color:#b52108;box-shadow:inset 0 0 0 1px #b52108}
 .field:focus-within input,.field:focus-within select,.field:focus-within textarea{border-color:var(--ink)}
 .btn:focus-visible,.gallery-filter:focus-visible,.menu-toggle:focus-visible{outline-color:var(--ink)}
 .hero .btn:focus-visible,.dark .btn:focus-visible{outline-color:var(--coral)}
+.checks .check:has(input:checked){background:var(--soft);box-shadow:0 0 0 4px var(--soft)}
+.checks .check{border-radius:var(--radius)}
+.form-progress li{position:relative}
+.form-progress li:after{content:'';position:absolute;left:0;right:0;top:-1px;height:3px;background:var(--ink);transform:scaleX(0);transform-origin:left}
+.form-progress li.is-current:after,.form-progress li.is-complete:after{transform:scaleX(1)}
+.faq summary:after{content:'+'!important;transform:rotate(0deg)}
+.faq details[open] summary:after{transform:rotate(45deg)}
+/* Decorative marquee is still while reading; it moves only on deliberate desktop hover. */
+.ticker-track{animation-play-state:paused}
+@media(prefers-reduced-motion:no-preference){
+  .btn{transition:background-color var(--motion-quick),transform var(--motion-hover) var(--motion-ease)}
+  .btn .arrow,.row-arrow,.circle-arrow,.text-link .icon-arrow,.related .icon-arrow,.localities .icon-arrow,.mobile-bar .icon-arrow{transition:transform var(--motion-hover) var(--motion-ease)}
+  .btn:active,.mobile-bar a:active{transform:scale(.975)}
+  .menu-toggle,.menu-close,.lightbox-close,.gallery-filter{transition:background-color var(--motion-quick),color var(--motion-quick),transform var(--motion-quick) var(--motion-ease)}
+  .menu-toggle:active,.menu-close:active,.lightbox-close:active,.gallery-filter:active{transform:scale(.95)}
+  .nav a:after{right:0;transform:scaleX(0);transform-origin:left;transition:transform var(--motion-hover) var(--motion-ease)}
+  .nav a:hover:after,.nav a[aria-current=page]:after{right:0;transform:scaleX(1)}
+  .mobile-nav a{transition:padding-left 220ms var(--motion-ease),color 180ms}
+  .service-visual img,.photo-open img{transition:transform 700ms var(--motion-ease)}
+  .photo-open-icon{transition:background-color 200ms,transform 300ms var(--motion-ease)}
+  .service-row,.related a,.localities a{transition:background-color 200ms}
+  .footer-links a{transition:transform var(--motion-hover) var(--motion-ease)}
+  .form-progress li:after{transition:transform 360ms var(--motion-ease)}
+  .field input,.field select,.field textarea,.checks .check{transition:border-color 160ms,background-color 160ms,box-shadow 160ms}
+  .faq summary:after{transition:transform 260ms var(--motion-ease)}
+  dialog::backdrop{animation:rc-page-in 240ms ease both}
+  @media(hover:hover) and (pointer:fine){
+    .btn:hover .arrow,.service-row:hover .row-arrow,.service-visual:hover .circle-arrow,.text-link:hover .icon-arrow,.related a:hover .icon-arrow,.localities a:hover .icon-arrow,.mobile-bar a:hover .icon-arrow{transform:translate(3px,-3px)}
+    .service-visual:hover img,.photo-open:hover img{transform:scale(1.04)}
+    .photo-open:hover .photo-open-icon{transform:translate(-2px,-2px);background:var(--coral)}
+    .service-row:hover,.related a:hover,.localities a:hover{background:var(--soft)}
+    .footer-links a:hover{transform:translateX(3px)}
+    .mobile-nav a:hover{padding-left:10px}
+    .ticker:hover .ticker-track{animation-play-state:running}
+  }
+}
 @media(prefers-reduced-motion:reduce){
   @view-transition{navigation:none}
   ::view-transition-group(*),::view-transition-old(root),::view-transition-new(root){animation:none!important}
