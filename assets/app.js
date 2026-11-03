@@ -3,7 +3,7 @@
   const $ = (s, parent = document) => parent.querySelector(s);
   const $$ = (s, parent = document) => [...parent.querySelectorAll(s)];
   const track = (event, detail = {}) => { window.dataLayer = window.dataLayer || []; window.dataLayer.push({ event, ...detail }); };
-  const openDialog = (dialog, source) => { if (!dialog) return; if (window.RCMotion) window.RCMotion.openDialog(dialog, source); else dialog.showModal(); };
+  const openDialog = dialog => { if (!dialog) return; if (window.RCMotion) window.RCMotion.openDialog(dialog); else dialog.showModal(); };
   const closeDialog = dialog => { if (!dialog) return Promise.resolve(); if (window.RCMotion) return window.RCMotion.closeDialog(dialog); dialog.close(); return Promise.resolve(); };
   const menu = $('#mobile-menu');
   const toggle = $('#menu-toggle');
@@ -24,10 +24,8 @@
     button.classList.add('is-active'); button.setAttribute('aria-pressed', 'true');
     const active = button.dataset.filter;
     const cards = $$('.gallery-item');
-    const before = window.RCMotion?.gallerySnapshot?.(cards);
-    const wasVisible = new Set(cards.filter(card => !card.hidden));
     cards.forEach(c => { c.hidden = active !== 'all' && c.dataset.category !== active; });
-    window.RCMotion?.galleryChange(cards.filter(card => !card.hidden && !wasVisible.has(card)), cards.filter(card => card.hidden), before, cards.filter(card => !card.hidden));
+    window.RCMotion?.galleryChange(cards.filter(card => !card.hidden), cards.filter(card => card.hidden));
     const n = cards.filter(c => !c.hidden).length;
     $('#gallery-count').textContent = photoCount(n);
   }));
@@ -39,7 +37,7 @@
     const enlarged = $('#lightbox-image');
     enlarged.src = button.dataset.full; enlarged.alt = image.alt;
     $('#lightbox-caption').textContent = button.dataset.caption || image.alt;
-    openDialog(lightbox, button); $('#lightbox-close').focus();
+    openDialog(lightbox); $('#lightbox-close').focus();
   }));
   const closePhoto = () => closeDialog(lightbox);
   $('#lightbox-close')?.addEventListener('click', closePhoto);
@@ -78,12 +76,11 @@
   unknownDate.addEventListener('change', () => { date.disabled = unknownDate.checked; date.required = !unknownDate.checked; date.setCustomValidity(''); date.removeAttribute('aria-invalid'); });
   date.addEventListener('change', () => date.setCustomValidity(date.value && date.value < today ? 'Vyberte dnešní nebo budoucí datum.' : ''));
   function showStep(index, focus = true) {
-    const previous = current;
     current = index;
     steps.forEach((s,i) => s.hidden = i !== current);
     progress.forEach((p,i) => { p.classList.toggle('is-current', i===current); p.classList.toggle('is-complete', i<current); if(i===current) p.setAttribute('aria-current','step');else p.removeAttribute('aria-current'); });
     $('#form-status').textContent = `Krok ${index+1} ze 3`;
-    if(focus) { $('.step-heading', steps[index]).focus(); window.RCMotion?.formStep(steps[index], index < previous ? -1 : 1); }
+    if(focus) $('.step-heading', steps[index]).focus();
   }
   function validateStep() {
     const fields = $$('input,select,textarea', steps[current]).filter(x => !x.disabled);
@@ -123,7 +120,6 @@
     $('#enquiry-summary').textContent=emailBody;
     form.hidden=true; $('#enquiry-result').hidden=false;
     $('#result-heading').focus();
-    window.RCMotion?.summary($('#enquiry-result'));
     track('enquiry_draft_created',{event_type:data.get('event'),source:location.pathname});
   });
   $('#copy-enquiry')?.addEventListener('click', async () => {
