@@ -58,3 +58,133 @@
 .hero-context,.heading-context{display:block;font:700 13px/1.6 var(--body);letter-spacing:0;text-transform:none;margin-bottom:30px}.hero-context:before,.heading-context:before{content:"";display:inline-block;width:7px;height:7px;background:var(--coral);border-radius:50%;margin-right:10px;vertical-align:2px}.heading-context:before{background:var(--brand)}@media(max-width:600px){.hero-context,.heading-context{font-size:11px;margin-bottom:30px;max-width:310px}}
 
 #poptavka{scroll-margin-top:24px}@media(max-width:950px){.contact-grid .form-panel{order:-1}.contact-grid .contact-info{order:0}}
+
+/* Czech display accents need a full ink-height allowance between baselines. */
+:root {
+  --base: 17px;
+  --radius: 8px;
+  --display-leading: 1.28;
+  --copy-leading: 1.7;
+  --h1: clamp(60px, 8.8vw, 140px);
+}
+
+body {
+  font-weight: 500;
+  line-height: var(--copy-leading);
+  -webkit-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+h1, h2, h3,
+.hero h1, .cta-grid h2, .step-heading, .footer-brand {
+  line-height: var(--display-leading);
+}
+
+h1, h2,
+.service-visual h3, .related h3, .person h3, .step-heading {
+  padding-block: .08em .04em;
+  letter-spacing: -.005em;
+}
+
+.hero h1, .page-head h1, .service-hero h1 { margin-bottom: 32px; }
+.label { margin-bottom: 28px; }
+.hero-context { margin-bottom: 40px; }
+.heading-context { margin-bottom: 32px; }
+
+.label, .hero .label, .hero-context, .heading-context {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+  letter-spacing: 0;
+}
+
+.hero-copy p, .intro-copy, .service-hero p,
+.service-text p, .locality-copy p {
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.75;
+}
+
+.lede, .section-top p, .service-visual p, .story-copy .lede,
+.quote p, .faq details p, .cta-aside p {
+  font-weight: 500;
+  line-height: var(--copy-leading);
+}
+
+.hero-note p, .hero-scroll, .trust-inner p, .photo-grid figcaption,
+.gallery-item figcaption, .gallery-count, .breadcrumb, .footer p,
+.footer-bottom, .contact-person span, .contact-info .note,
+.field small, .privacy-note, .email-note, .copy-status, .person .role {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+.gallery-item figcaption span {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.service-row p, .values p, .process-item p, .related p, .menu-example p {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: var(--copy-leading);
+}
+
+.client-names { font-weight: 700; letter-spacing: 0; }
+.process-item h3, .service-row h3 { line-height: 1.5; }
+.service-text h3, .locality-copy h2, .locality-copy h3, .legal h2 {
+  line-height: 1.45;
+}
+.mobile-nav a { line-height: 1.4; padding-block: 16px; }
+.footer-links { font-size: 14px; font-weight: 500; line-height: 1.65; }
+.footer h3 { font-size: 14px; line-height: 1.6; }
+.step-description { font-size: 15px; font-weight: 500; line-height: 1.7; }
+.field, .field-label { font-size: 14px; font-weight: 600; line-height: 1.6; }
+.check { font-size: 14px; font-weight: 500; line-height: 1.6; }
+.field input, .field select, .field textarea {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.form-progress li { font-size: 12px; line-height: 1.6; }
+.conditional { font-size: 14px; line-height: 1.65; }
+.result-summary { font: 500 14px/1.7 var(--body); }
+
+.btn, .btn-small, .hero .btn, .form-actions .btn,
+.result-actions .btn, .gallery-filter, .mobile-bar a {
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+.menu-toggle, .menu-close, .lightbox-close, .photo-open:after {
+  border-radius: var(--radius);
+}
+.form-back { border-radius: var(--radius); font-size: 14px; }
+.localities a { font-size: 14px; font-weight: 500; }
+
+@media (max-width: 600px) {
+  :root { --base: 16px; }
+  .hero h1 {
+    font-size: clamp(52px, 16.15vw, 85px);
+    line-height: var(--display-leading);
+  }
+  .hero-context, .heading-context { margin-bottom: 28px; }
+  .hero-copy p, .intro-copy, .service-hero p,
+  .service-text p, .locality-copy p { font-size: 16px; }
+  .hero .buttons { gap: 12px; }
+  .hero-bottom { margin-top: 28px; }
+  .hero-inner { padding-bottom: 40px; }
+  .section-top p, .service-visual p, .faq details p { font-size: 16px; }
+  .service-visual-content { padding-bottom: 92px; }
+  .cta-grid h2 { font-size: 54px; line-height: var(--display-leading); }
+  .mobile-nav a { font-size: 36px; }
+  .form-progress { gap: 12px; }
+  .gallery-filter { padding-inline: 16px; }
+  .mobile-bar a { font-size: 13px; }
+  .localities { column-gap: 16px; }
+}

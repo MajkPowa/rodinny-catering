@@ -1,0 +1,35 @@
+/* Progressive motion: no baseline opacity, visibility, masks, clipping or layout changes. */
+:root{--motion-ease:cubic-bezier(.16,1,.3,1);--motion-quick:190ms;--motion-hover:260ms}
+/* Same-origin page transitions enhance normal links; unsupported browsers navigate normally. */
+@view-transition{navigation:auto}
+@keyframes rc-page-out{to{opacity:0}}
+@keyframes rc-page-in{from{opacity:0}to{opacity:1}}
+::view-transition-old(root){animation:rc-page-out 160ms ease-out both}
+::view-transition-new(root){animation:rc-page-in 220ms var(--motion-ease) both}
+@media(prefers-reduced-motion:no-preference){
+  .btn{transition:transform var(--motion-hover) var(--motion-ease)}
+  .btn .arrow,.row-arrow,.circle-arrow{transition:transform var(--motion-hover) var(--motion-ease)}
+  .btn:active{transform:translateY(0) scale(.98)}
+  .menu-toggle,.menu-close,.lightbox-close,.gallery-filter{transition:transform var(--motion-quick) var(--motion-ease)}
+  .menu-toggle:active,.menu-close:active,.lightbox-close:active,.gallery-filter:active{transform:scale(.96)}
+  .nav a:after{right:0;transform:scaleX(0);transform-origin:left;transition:transform var(--motion-hover) var(--motion-ease)}
+  .nav a:hover:after,.nav a[aria-current=page]:after{right:0;transform:scaleX(1)}
+  .service-visual img,.photo-open img{transition:transform 700ms var(--motion-ease)}
+  .footer-links a{transition:transform var(--motion-hover) var(--motion-ease)}
+  @media(hover:hover) and (pointer:fine){
+    .btn:hover .arrow,.service-row:hover .row-arrow{transform:translate(3px,-3px)}
+    .service-visual:hover .circle-arrow{transform:translate(3px,-3px)}
+    .service-visual:hover img,.photo-open:hover img{transform:scale(1.035)}
+    .footer-links a:hover{transform:translateX(3px)}
+  }
+}
+/* Focus appears immediately; its position and the text's glyph metrics never animate. */
+.field:focus-within input,.field:focus-within select,.field:focus-within textarea{border-color:var(--ink)}
+.btn:focus-visible,.gallery-filter:focus-visible,.menu-toggle:focus-visible{outline-color:var(--ink)}
+.hero .btn:focus-visible,.dark .btn:focus-visible{outline-color:var(--coral)}
+@media(prefers-reduced-motion:reduce){
+  @view-transition{navigation:none}
+  ::view-transition-group(*),::view-transition-old(root),::view-transition-new(root){animation:none!important}
+  html{scroll-behavior:auto!important}
+  *,*:before,*:after{animation:none!important;transition:none!important}
+}
