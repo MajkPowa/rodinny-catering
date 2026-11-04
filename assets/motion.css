@@ -2,10 +2,10 @@
 :root{--motion-ease:cubic-bezier(.4,0,.2,1);--motion-quick:180ms;--motion-hover:180ms}
 
 /* Fixed metrics: validation and selection never resize a field. */
-.field input[aria-invalid=true],.field select[aria-invalid=true],.field textarea[aria-invalid=true]{border-color:#b52108;box-shadow:inset 0 0 0 1px #b52108}
+.field input[aria-invalid=true],.field select[aria-invalid=true],.field textarea[aria-invalid=true]{border-color:#925247;box-shadow:inset 0 0 0 1px #925247}
 .field:focus-within input,.field:focus-within select,.field:focus-within textarea{border-color:var(--ink)}
 .btn:focus-visible,.gallery-filter:focus-visible,.menu-toggle:focus-visible{outline-color:var(--ink)}
-.hero .btn:focus-visible,.dark .btn:focus-visible{outline-color:var(--coral)}
+.hero .btn:focus-visible,.dark .btn:focus-visible{outline-color:var(--coral-dark)}
 .checks .check:has(input:checked){background:var(--soft);box-shadow:0 0 0 4px var(--soft)}
 .checks .check{border-radius:var(--radius)}
 .form-progress li{position:relative}

@@ -24,7 +24,7 @@
     button.classList.add('is-active'); button.setAttribute('aria-pressed', 'true');
     const active = button.dataset.filter;
     const cards = $$('.gallery-item');
-    cards.forEach(c => { c.hidden = active !== 'all' && c.dataset.category !== active; });
+    cards.forEach(c => { c.hidden = active !== 'all' && !c.dataset.category.split(' ').includes(active); });
     window.RCMotion?.galleryChange(cards.filter(card => !card.hidden), cards.filter(card => card.hidden));
     const n = cards.filter(c => !c.hidden).length;
     $('#gallery-count').textContent = photoCount(n);
