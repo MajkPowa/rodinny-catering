@@ -17,6 +17,46 @@
   $$('a[href^="tel:"]').forEach(a => a.addEventListener('click', () => track('phone_click', { location: a.dataset.location || 'page' })));
   $$('a[href*="/kontakt/"]').forEach(a => a.addEventListener('click', () => track('enquiry_start', { source: location.pathname })));
 
+  const heroVideo = $('#hero-video');
+  if (heroVideo) {
+    const control = $('.hero-video-toggle');
+    const label = $('.sr-only', control);
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let started = false;
+
+    function playHero() {
+      started = true;
+      if (!heroVideo.hasAttribute('src')) {
+        const mobile = matchMedia('(max-width: 767px)').matches;
+        heroVideo.src = mobile ? heroVideo.dataset.videoSmall : heroVideo.dataset.videoSrc;
+      }
+      heroVideo.muted = true;
+      heroVideo.play().catch(() => {});
+    }
+
+    function updateVideoControl() {
+      const playing = !heroVideo.paused && !heroVideo.ended;
+      control.toggleAttribute('data-playing', playing);
+      label.textContent = playing ? 'Pozastavit úvodní video' : 'Přehrát úvodní video';
+    }
+
+    control.hidden = false;
+    control.addEventListener('click', () => heroVideo.paused ? playHero() : heroVideo.pause());
+    ['play', 'pause', 'ended', 'error'].forEach(event => heroVideo.addEventListener(event, updateVideoControl));
+    reducedMotion.addEventListener('change', event => { if (event.matches) heroVideo.pause(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden) heroVideo.pause(); });
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.intersectionRatio < 0.5) {
+          heroVideo.pause();
+        } else if (!started && !document.hidden && !reducedMotion.matches && !navigator.connection?.saveData) {
+          playHero();
+        }
+      }, { threshold: 0.5 });
+      observer.observe(heroVideo);
+    }
+  }
+
   const filters = $$('.gallery-filter');
   const photoCount = n => n === 1 ? 'Zobrazena 1 fotografie' : n >= 2 && n <= 4 ? `Zobrazeny ${n} fotografie` : `Zobrazeno ${n} fotografií`;
   filters.forEach(button => button.addEventListener('click', () => {
@@ -58,8 +98,12 @@
   const now = new Date();
   const today = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
   date.min = today;
-  const preset = new URLSearchParams(location.search).get('typ');
+  const params = new URLSearchParams(location.search);
+  const preset = params.get('typ');
   if (preset && [...event.options].some(o => o.value === preset)) event.value = preset;
+  const place = $('#event-place', form);
+  const presetPlace = params.get('misto');
+  if (presetPlace && !place.value) place.value = presetPlace.trim().slice(0, place.maxLength);
   function updateConditional() {
     $$('.conditional', form).forEach(el => {
       const wasHidden = el.hidden;
