@@ -445,7 +445,8 @@ input[type=checkbox] { accent-color:var(--coral-dark); }
   :root { --header:76px; --gutter:20px; --section:64px; --h2:30px; --h3:24px; }
   .brand,.brand img { width:142px; }
   .brand img { height:54px; }
-  .hero-layout { min-height:calc(100svh - var(--header) - 60px); padding-block:48px 84px; }
+  .hero-layout { min-height:calc(100svh - var(--header) - 60px); padding-block:64px 64px; }
+  .hero-video-toggle { top:12px; right:16px; bottom:auto; }
   .hero-eyebrow { font-size:12px; margin-bottom:20px; }
   .hero h1 { font-size:44px; line-height:1.2; margin-bottom:24px; }
   .hero h1 span { font-size:27px; line-height:1.4; margin-top:12px; }
