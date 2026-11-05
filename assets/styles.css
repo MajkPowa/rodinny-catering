@@ -288,7 +288,15 @@ p { margin-bottom:20px; }
 .client-carousel-heading p { max-width:360px; margin:0; font-size:14px; color:var(--muted); }
 .client-carousel-heading .text-link { flex-shrink:0; }
 .carousel { --carousel-gap:24px; --slide-width:calc((100% - var(--carousel-gap)) / 2); display:flex; flex-direction:column; min-width:0; }
-.client-carousel { --slide-width:calc((100% - 3 * var(--carousel-gap)) / 4); }
+.client-marquee { --logo-gap:24px; width:100%; overflow-x:auto; overscroll-behavior-x:contain; padding-block:4px; }
+.client-marquee:focus-visible { outline-offset:-3px; }
+.client-marquee-track,.client-marquee-group { display:flex; width:max-content; }
+.client-marquee-group { flex:none; gap:var(--logo-gap); padding-right:var(--logo-gap); }
+.client-marquee-group .client-reference { flex:0 0 clamp(190px,18vw,250px); width:clamp(190px,18vw,250px); min-height:132px; }
+.client-marquee[data-marquee-ready] { overflow:hidden; touch-action:pan-y; cursor:grab; }
+.client-marquee[data-marquee-ready]:active { cursor:grabbing; }
+.client-marquee[data-marquee-ready] .client-marquee-track { will-change:transform; user-select:none; }
+.client-marquee img { pointer-events:none; }
 .carousel-track { order:0; display:flex; gap:var(--carousel-gap); overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; padding-block:4px; }
 [data-carousel-ready] .carousel-track { scrollbar-width:none; }
 [data-carousel-ready] .carousel-track::-webkit-scrollbar { display:none; }
@@ -448,7 +456,6 @@ input[type=checkbox] { accent-color:var(--coral-dark); }
   .hero-copy p { font-size:16px; }
   .proof-row { gap:12px; }
   .proof-row strong { font-size:28px; }
-  .client-carousel { --slide-width:calc((100% - 2 * var(--carousel-gap)) / 3); }
   .story-grid { gap:40px; }
   .values { grid-template-columns:1fr 1fr; }
   .faq-grid { grid-template-columns:1fr; gap:24px; }
@@ -477,7 +484,8 @@ input[type=checkbox] { accent-color:var(--coral-dark); }
   .client-carousel-heading { display:block; margin-bottom:20px; }
   .client-carousel-heading p { margin-bottom:8px; }
   .carousel { --carousel-gap:16px; --slide-width:100%; }
-  .client-carousel { --slide-width:calc((100% - var(--carousel-gap)) / 2); }
+  .client-marquee { --logo-gap:16px; }
+  .client-marquee-group .client-reference { flex-basis:180px; width:180px; min-height:128px; }
   .client-reference { font-size:14px; }
   .carousel-controls { margin-top:20px; }
   .section-top { margin-bottom:28px; }

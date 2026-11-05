@@ -4,6 +4,115 @@
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
   const tolerance = 1.5;
 
+  document.querySelectorAll('[data-client-marquee]').forEach(root => {
+    const track = root.querySelector('.client-marquee-track');
+    const group = track?.querySelector('.client-marquee-group');
+    if (!group || !track.animate) return;
+
+    let animation;
+    let distance = 0;
+    let duration = 0;
+    let visible = !('IntersectionObserver' in window);
+    let suspended = false;
+    let pointer = null;
+    let resizeFrame;
+    const modulo = (value, size) => ((value % size) + size) % size;
+
+    function syncPlayback() {
+      if (!animation) return;
+      if (visible && !suspended && !document.hidden && pointer === null && !root.matches(':focus-visible')) animation.play();
+      else animation.pause();
+    }
+
+    function measure() {
+      resizeFrame = undefined;
+      const width = group.getBoundingClientRect().width;
+      if (!width || !root.clientWidth) return;
+      const phase = duration ? modulo(Number(animation?.currentTime) || 0, duration) / duration : 0;
+      animation?.cancel();
+      track.querySelectorAll('[data-marquee-copy]').forEach(copy => copy.remove());
+      // Every group includes its trailing gap. Repeating exactly this width makes the seam invisible.
+      for (let i = 0; i < Math.ceil(root.clientWidth / width); i++) {
+        const copy = group.cloneNode(true);
+        copy.dataset.marqueeCopy = '';
+        copy.setAttribute('aria-hidden', 'true');
+        copy.inert = true;
+        track.append(copy);
+      }
+      track.querySelectorAll('img').forEach(image => { image.loading = 'eager'; });
+      distance = width;
+      // Keep the requested automatic loop, with gentler travel when reduced motion is preferred.
+      duration = distance / (reduceMotion.matches ? 12 : 28) * 1000;
+      root.scrollLeft = 0;
+      animation = track.animate([
+        { transform: 'translate3d(0,0,0)' },
+        { transform: `translate3d(${-distance}px,0,0)` }
+      ], { duration, iterations: Infinity, easing: 'linear' });
+      animation.currentTime = phase * duration;
+      root.dataset.marqueeReady = 'true';
+      syncPlayback();
+    }
+
+    function requestMeasure() {
+      if (resizeFrame === undefined) resizeFrame = requestAnimationFrame(measure);
+    }
+
+    function advance(pixels) {
+      if (!animation || !distance) return;
+      animation.currentTime = modulo((Number(animation.currentTime) || 0) + pixels / distance * duration, duration);
+    }
+
+    root.addEventListener('keydown', event => {
+      if (event.target !== root || !animation || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      event.preventDefault();
+      const step = distance / group.children.length;
+      if (event.key === 'Home') animation.currentTime = 0;
+      else if (event.key === 'End') animation.currentTime = (distance - step) / distance * duration;
+      else advance(event.key === 'ArrowLeft' ? -step : step);
+      syncPlayback();
+    });
+    root.addEventListener('focus', syncPlayback);
+    root.addEventListener('blur', syncPlayback);
+    root.addEventListener('pointerdown', event => {
+      if (!animation || !event.isPrimary || event.button !== 0) return;
+      pointer = { id: event.pointerId, x: event.clientX };
+      root.setPointerCapture(event.pointerId);
+      syncPlayback();
+    });
+    root.addEventListener('pointermove', event => {
+      if (pointer?.id !== event.pointerId) return;
+      advance(pointer.x - event.clientX);
+      pointer.x = event.clientX;
+    });
+    function finishDrag() {
+      if (pointer === null) return;
+      const id = pointer.id;
+      pointer = null;
+      if (root.hasPointerCapture(id)) root.releasePointerCapture(id);
+      syncPlayback();
+    }
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => root.addEventListener(type, finishDrag));
+    window.addEventListener('blur', finishDrag);
+    document.addEventListener('visibilitychange', () => { finishDrag(); syncPlayback(); });
+    window.addEventListener('pagehide', () => { suspended = true; finishDrag(); syncPlayback(); });
+    window.addEventListener('pageshow', () => { suspended = false; syncPlayback(); });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        syncPlayback();
+      }).observe(root);
+    }
+    if ('ResizeObserver' in window) {
+      const observer = new ResizeObserver(requestMeasure);
+      observer.observe(root);
+      observer.observe(group);
+    } else window.addEventListener('resize', requestMeasure, { passive: true });
+    if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', requestMeasure);
+    else reduceMotion.addListener(requestMeasure);
+    measure();
+  });
+
   document.querySelectorAll('[data-carousel]').forEach(root => {
     const track = root.querySelector('.carousel-track');
     const controls = root.querySelector('.carousel-controls');
