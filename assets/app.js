@@ -21,17 +21,24 @@
   if (heroVideo) {
     const control = $('.hero-video-toggle');
     const label = $('.sr-only', control);
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-    let started = false;
+    let inView = false;
+    let userPaused = false;
 
     function playHero() {
-      started = true;
+      heroVideo.muted = true;
       if (!heroVideo.hasAttribute('src')) {
         const mobile = matchMedia('(max-width: 767px)').matches;
         heroVideo.src = mobile ? heroVideo.dataset.videoSmall : heroVideo.dataset.videoSrc;
       }
-      heroVideo.muted = true;
       heroVideo.play().catch(() => {});
+    }
+
+    function syncHero() {
+      if (document.hidden || !inView || userPaused) {
+        heroVideo.pause();
+      } else if (heroVideo.paused) {
+        playHero();
+      }
     }
 
     function updateVideoControl() {
@@ -41,19 +48,24 @@
     }
 
     control.hidden = false;
-    control.addEventListener('click', () => heroVideo.paused ? playHero() : heroVideo.pause());
+    control.addEventListener('click', () => {
+      userPaused = !heroVideo.paused;
+      if (userPaused) heroVideo.pause();
+      else playHero();
+    });
     ['play', 'pause', 'ended', 'error'].forEach(event => heroVideo.addEventListener(event, updateVideoControl));
-    reducedMotion.addEventListener('change', event => { if (event.matches) heroVideo.pause(); });
-    document.addEventListener('visibilitychange', () => { if (document.hidden) heroVideo.pause(); });
+    document.addEventListener('visibilitychange', syncHero);
+    window.addEventListener('pagehide', () => heroVideo.pause());
+    window.addEventListener('pageshow', syncHero);
     if ('IntersectionObserver' in window) {
       const observer = new IntersectionObserver(([entry]) => {
-        if (entry.intersectionRatio < 0.5) {
-          heroVideo.pause();
-        } else if (!started && !document.hidden && !reducedMotion.matches && !navigator.connection?.saveData) {
-          playHero();
-        }
-      }, { threshold: 0.5 });
-      observer.observe(heroVideo);
+        inView = entry.isIntersecting;
+        syncHero();
+      });
+      observer.observe(heroVideo.closest('.hero'));
+    } else {
+      inView = true;
+      syncHero();
     }
   }
 
