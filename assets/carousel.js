@@ -9,38 +9,25 @@
     const controls = root.querySelector('.carousel-controls');
     const previous = root.querySelector('[data-carousel-prev]');
     const next = root.querySelector('[data-carousel-next]');
-    const toggle = root.querySelector('[data-carousel-toggle]');
     const status = root.querySelector('[data-carousel-status]');
-    if (!track || !controls || !previous || !next || !toggle || !status) return;
+    if (!track || !controls || !previous || !next || !status) return;
     const slides = Array.from(track.children).filter(slide => slide.classList.contains('carousel-slide'));
     if (slides.length < 2) return;
 
-    const label = toggle.querySelector('.sr-only');
-    const noun = root.dataset.carouselKind === 'reviews' ? 'recenzí' : 'referencí';
     const configuredInterval = Number(root.dataset.carouselInterval);
     const interval = Number.isFinite(configuredInterval) && configuredInterval >= 1000 ? configuredInterval : 6500;
     let stops = [];
     let displayedIndex = 0;
     let targetIndex = null;
-    let requested = null;
-    let pointerChoice;
     let visible = false;
     let hovered = false;
+    let dragging = false;
     let autoTimer;
     let targetTimer;
     let counterFrame;
 
-    const wantsAuto = () => requested ?? !reduceMotion.matches;
-    const canAuto = () => wantsAuto() && visible && !hovered && !document.hidden && stops.length > 1;
-
-    function updateToggle() {
-      const enabled = wantsAuto();
-      const text = `${enabled ? 'Pozastavit' : 'Spustit'} posouvání ${noun}`;
-      toggle.toggleAttribute('data-playing', enabled);
-      toggle.setAttribute('aria-label', text);
-      status.setAttribute('aria-live', enabled ? 'off' : 'polite');
-      if (label) label.textContent = text;
-    }
+    const hasKeyboardFocus = () => root.querySelector(':focus-visible') !== null;
+    const canAuto = () => visible && !hovered && !dragging && !hasKeyboardFocus() && !document.hidden && stops.length > 1;
 
     function nearestStop() {
       const left = track.scrollLeft;
@@ -86,18 +73,13 @@
 
     function scheduleAuto() {
       clearTimeout(autoTimer);
+      status.setAttribute('aria-live', hasKeyboardFocus() ? 'polite' : 'off');
       if (!canAuto()) return;
       autoTimer = setTimeout(() => {
         if (!canAuto()) return;
         move(1);
         scheduleAuto();
       }, interval);
-    }
-
-    function stopAuto() {
-      requested = false;
-      updateToggle();
-      scheduleAuto();
     }
 
     function measure() {
@@ -139,20 +121,10 @@
       scheduleAuto();
     }
 
-    previous.addEventListener('click', () => { stopAuto(); move(-1); });
-    next.addEventListener('click', () => { stopAuto(); move(1); });
-    // A pointer click can focus (and pause) the carousel before its click handler runs.
-    toggle.addEventListener('pointerdown', event => {
-      if (event.button === 0) pointerChoice = !wantsAuto();
-    });
-    toggle.addEventListener('pointercancel', () => { pointerChoice = undefined; });
-    toggle.addEventListener('click', event => {
-      requested = event.detail && pointerChoice !== undefined ? pointerChoice : !wantsAuto();
-      pointerChoice = undefined;
-      updateToggle();
-      scheduleAuto();
-    });
-    root.addEventListener('focusin', stopAuto);
+    previous.addEventListener('click', () => { move(-1); scheduleAuto(); });
+    next.addEventListener('click', () => { move(1); scheduleAuto(); });
+    root.addEventListener('focusin', scheduleAuto);
+    root.addEventListener('focusout', () => queueMicrotask(scheduleAuto));
     root.addEventListener('pointerenter', event => {
       if (event.pointerType !== 'mouse' && event.pointerType !== 'pen') return;
       hovered = true;
@@ -164,30 +136,41 @@
       scheduleAuto();
     });
 
-    const stopForNativeScroll = () => { clearTarget(); stopAuto(); };
-    track.addEventListener('pointerdown', stopForNativeScroll, { passive: true });
+    track.addEventListener('pointerdown', () => {
+      dragging = true;
+      clearTarget();
+      scheduleAuto();
+    }, { passive: true });
+    const finishDrag = () => {
+      if (!dragging) return;
+      dragging = false;
+      scheduleAuto();
+    };
+    window.addEventListener('pointerup', finishDrag, { passive: true });
+    window.addEventListener('pointercancel', finishDrag, { passive: true });
+    window.addEventListener('blur', finishDrag);
     track.addEventListener('wheel', event => {
-      if (Math.abs(event.deltaX) > Math.abs(event.deltaY) || (event.shiftKey && event.deltaY)) stopForNativeScroll();
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY) || (event.shiftKey && event.deltaY)) {
+        clearTarget();
+        scheduleAuto();
+      }
     }, { passive: true });
     track.addEventListener('scroll', () => {
       if (targetIndex !== null && Math.abs(track.scrollLeft - stops[targetIndex].left) <= tolerance) clearTarget();
       queueCounter();
+      if (targetIndex === null) scheduleAuto();
     }, { passive: true });
     track.addEventListener('keydown', event => {
       if (event.target !== track || stops.length < 2 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
-      stopAuto();
       if (event.key === 'Home' || event.key === 'End') goTo(event.key === 'Home' ? 0 : stops.length - 1, true);
       else move(event.key === 'ArrowLeft' ? -1 : 1);
+      scheduleAuto();
     });
 
     function onMotionChange() {
-      if (reduceMotion.matches) {
-        if (requested === true) requested = null;
-        if (targetIndex !== null) goTo(nearestStop(), true);
-      }
-      updateToggle();
+      if (reduceMotion.matches && targetIndex !== null) goTo(nearestStop(), true);
       scheduleAuto();
     }
     if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', onMotionChange);
@@ -201,11 +184,16 @@
     }
     if ('ResizeObserver' in window) new ResizeObserver(measure).observe(track);
     else window.addEventListener('resize', measure, { passive: true });
-    document.addEventListener('visibilitychange', scheduleAuto);
-    window.addEventListener('pagehide', () => clearTimeout(autoTimer));
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) dragging = false;
+      scheduleAuto();
+    });
+    window.addEventListener('pagehide', () => {
+      dragging = false;
+      clearTimeout(autoTimer);
+    });
     window.addEventListener('pageshow', scheduleAuto);
 
-    updateToggle();
     measure();
     root.dataset.carouselReady = 'true';
   });

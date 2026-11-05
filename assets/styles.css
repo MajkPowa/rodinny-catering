@@ -299,13 +299,10 @@ p { margin-bottom:20px; }
 .carousel-button:hover { background:var(--salmon-soft); }
 .carousel-button:active { background:var(--coral); }
 .carousel-button svg { width:20px; height:20px; }
-.carousel-toggle svg { fill:currentColor; }
-.carousel-toggle .pause-icon,.carousel-toggle[data-playing] .play-icon { display:none; }
-.carousel-toggle[data-playing] .pause-icon { display:block; }
 .carousel-arrows { display:flex; gap:8px; margin-left:auto; }
 .carousel-status { font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums; }
 .client-reference { min-height:104px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:16px 12px; border:1px solid var(--line); border-radius:8px; text-align:center; font-size:17px; font-weight:600; line-height:1.5; }
-.client-logo { width:44px; height:44px; object-fit:contain; }
+.client-logo { width:min(160px,100%); height:60px; object-fit:contain; filter:grayscale(1); opacity:.78; }
 .client-logo-wide { width:112px; object-fit:cover; }
 .client-reference:has(img) { font-size:13px; }
 .section-top { margin-bottom:36px; }
@@ -342,8 +339,9 @@ p { margin-bottom:20px; }
 .quote:before { display:none; }
 .quote p { font-size:16px; line-height:1.8; margin-bottom:20px; }
 .quote cite { display:flex; align-items:center; gap:14px; font-weight:600; font-size:14px; margin-top:auto; font-style:normal; }
-.quote-logo { width:48px; height:48px; flex:none; border-radius:6px; }
+.quote-logo { width:72px; height:48px; flex:none; object-fit:contain; border-radius:0; filter:grayscale(1); opacity:.78; }
 .quote-logo-wide { width:112px; object-fit:cover; border-radius:0; }
+.logo-reversed { filter:brightness(0); opacity:.58; }
 .quote-context { display:block; color:var(--muted); font-size:12px; font-weight:400; margin-top:4px; }
 .quote-featured { border-color:#d8aa9f; background:#faf2ee; }
 .quote-source { font-size:12px; color:var(--coral-dark); text-decoration:underline; margin-top:12px; }
