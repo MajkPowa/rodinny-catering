@@ -532,6 +532,7 @@ input[type=checkbox] { accent-color:var(--coral-dark); }
   .gallery-filters { gap:8px; margin-bottom:24px; }
   .gallery-filter { font-size:12px; padding:10px 14px; }
   .gallery { gap:24px 16px; }
+  .service-gallery .gallery { grid-template-columns:1fr; }
   .photo-open img { height:220px; }
   .gallery-item figcaption { font-size:12px; }
   .gallery-item figcaption span { font-size:11px; }
